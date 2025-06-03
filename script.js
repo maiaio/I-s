@@ -1,5 +1,4 @@
 let player, buzz, buzz2;
-
 let minSize = 100;
 let maxSize = 600;
 let maxShapeSize = 500;
@@ -13,7 +12,7 @@ let dragging = false;
 let shapeX1, shapeY1, shapeSize1;
 let shapeX2, shapeY2, shapeSize2;
 
-let playingSound = 0; // 0 = none, 1 = buzz, 2 = buzz2
+let playingSound = 0;
 
 function preload() {
   player = loadSound('sounds/sound.mp3');
@@ -22,12 +21,12 @@ function preload() {
 }
 
 function setup() {
-  createCanvas(600, 600);
+  let cnv = createCanvas(600, 600);
+  cnv.parent(document.body);
   background(0);
   noLoop();
 
-  player.setLoop(true);
-  player.play();
+  player.loop();
 
   sliderX = width / 2;
   sliderWidth = width - 100;
@@ -36,6 +35,7 @@ function setup() {
 
 function draw() {
   background(0);
+
   let s = map(width, minSize, maxSize, minShapeSize, maxShapeSize);
   let shapeType = int(random(5));
 
@@ -52,7 +52,9 @@ function draw() {
   fill(255);
   drawShape(shapeType, shapeX2, shapeY2, shapeSize2);
 
-  if (showStatic) drawStatic();
+  if (showStatic) {
+    drawStatic();
+  }
 
   if (checkCollision()) {
     if (playingSound !== 2) {
@@ -64,21 +66,6 @@ function draw() {
 
   drawSlider();
   adjustSound();
-}
-
-function drawShape(type, x, y, s) {
-  if (type === 0) {
-    ellipse(x, y, s, s);
-  } else if (type === 1) {
-    ellipse(x, y, s, s);
-    rect(x - s / 2, y - s / 2, s, s);
-  } else if (type === 2) {
-    triangle(x, y - s / 2, x - s / 2, y + s / 2, x + s / 2, y + s / 2);
-  } else if (type === 3) {
-    ellipse(x, y, s * 1.5, s);
-  } else if (type === 4) {
-    rect(x, y, s * 1.5, s / 2);
-  }
 }
 
 function drawSlider() {
@@ -115,6 +102,32 @@ function mouseReleased() {
   dragging = false;
 }
 
+function adjustSound() {
+  let volume = map(width, minSize, maxSize, -20, 5);
+  player.setVolume(map(volume, -20, 5, 0, 1));
+}
+
+function drawShape(type, x, y, s) {
+  switch (type) {
+    case 0:
+      ellipse(x, y, s, s);
+      break;
+    case 1:
+      ellipse(x, y, s, s);
+      rect(x - s / 2, y - s / 2, s, s);
+      break;
+    case 2:
+      triangle(x, y - s / 2, x - s / 2, y + s / 2, x + s / 2, y + s / 2);
+      break;
+    case 3:
+      ellipse(x, y, s * 1.5, s);
+      break;
+    case 4:
+      rect(x, y, s * 1.5, s / 2);
+      break;
+  }
+}
+
 function mouseMoved() {
   let over1 = dist(mouseX, mouseY, shapeX1, shapeY1) < shapeSize1 / 2;
   let over2 = dist(mouseX, mouseY, shapeX2, shapeY2) < shapeSize2 / 2;
@@ -127,14 +140,9 @@ function mouseMoved() {
 }
 
 function stopAllSounds() {
-  buzz.stop();
-  buzz2.stop();
+  if (buzz.isPlaying()) buzz.stop();
+  if (buzz2.isPlaying()) buzz2.stop();
   playingSound = 0;
-}
-
-function adjustSound() {
-  let volume = map(width, minSize, maxSize, 0.0, 1.0);
-  player.setVolume(volume);
 }
 
 function checkCollision() {
